@@ -1,94 +1,57 @@
-// Step 1: Define the Account Trait
+// Define the Account trait with deposit, withdraw, and balance methods
 trait Account {
-    fn deposit(&mut self, amount: f64);
+    fn deposit(&mut self, amount: f64) -> Result<(), String>;
     fn withdraw(&mut self, amount: f64) -> Result<(), String>;
-    fn get_balance(&self) -> f64;
+    fn balance(&self) -> f64;
 }
 
-// Step 2: Create Structs for Different Types of Accounts
-struct CheckingAccount {
+// Implement the Account trait for BankAccount struct
+struct BankAccount {
+    account_number: String,
+    holder_name: String,
     balance: f64,
-    overdraft_limit: f64,
 }
 
-struct SavingsAccount {
-    balance: f64,
-    interest_rate: f64,
-}
-
-// Step 3: Implement the Account Trait for CheckingAccount
-impl Account for CheckingAccount {
-    fn deposit(&mut self, amount: f64) {
+impl Account for BankAccount {
+    fn deposit(&mut self, amount: f64) -> Result<(), String> {
+        if amount < 0.0 {
+            return Err("Deposit amount cannot be negative".to_string());
+        }
         self.balance += amount;
+        Ok(())
     }
 
     fn withdraw(&mut self, amount: f64) -> Result<(), String> {
-        if self.balance + self.overdraft_limit >= amount {
-            self.balance -= amount;
-            Ok(())
-        } else {
-            Err(String::from("Insufficient funds"))
+        if amount < 0.0 {
+            return Err("Withdrawal amount cannot be negative".to_string());
         }
+        if amount > self.balance {
+            return Err("Insufficient funds".to_string());
+        }
+        self.balance -= amount;
+        Ok(())
     }
 
-    fn get_balance(&self) -> f64 {
+    fn balance(&self) -> f64 {
         self.balance
     }
 }
 
-// Step 3: Implement the Account Trait for SavingsAccount
-impl Account for SavingsAccount {
-    fn deposit(&mut self, amount: f64) {
-        self.balance += amount;
-    }
-
-    fn withdraw(&mut self, amount: f64) -> Result<(), String> {
-        if self.balance >= amount {
-            self.balance -= amount;
-            Ok(())
-        } else {
-            Err(String::from("Insufficient funds"))
-        }
-    }
-
-    fn get_balance(&self) -> f64 {
-        self.balance
-    }
-}
-
-// Step 4: Write the main Function
 fn main() {
-    // Create a CheckingAccount
-    let mut checking_account = CheckingAccount {
-        balance: 1000.0,
-        overdraft_limit: 500.0,
+    // Create two BankAccount instances
+    let mut account1 = BankAccount {
+        account_number: "SBIN00034".to_string(),
+        holder_name: "Mishal Turkane".to_string(),
+        balance: 100.0,
     };
 
-    // Create a SavingsAccount
-    let mut savings_account = SavingsAccount {
-        balance: 2000.0,
-        interest_rate: 0.03,
-    };
 
-    // Deposit money into CheckingAccount
-    checking_account.deposit(200.0);
-    println!("CheckingAccount balance: ${}", checking_account.get_balance());
-
-    // Withdraw money from CheckingAccount
-    match checking_account.withdraw(1500.0) {
-        Ok(()) => println!("Withdrawal successful"),
-        Err(e) => println!("Failed to withdraw: {}", e),
+    // Deposit money into account1
+    match account1.deposit(50.0) {
+        Ok(_) => println!("Deposit successful"),
+        Err(err) => println!("Deposit failed: {}", err),
     }
-    println!("CheckingAccount balance: ${}", checking_account.get_balance());
 
-    // Deposit money into SavingsAccount
-    savings_account.deposit(500.0);
-    println!("SavingsAccount balance: ${}", savings_account.get_balance());
-
-    // Withdraw money from SavingsAccount
-    match savings_account.withdraw(1000.0) {
-        Ok(()) => println!("Withdrawal successful"),
-        Err(e) => println!("Failed to withdraw: {}", e),
-    }
-    println!("SavingsAccount balance: ${}", savings_account.get_balance());
+    // Print balances of both accounts
+    println!("Account 1 Balance: {}", account1.balance());
 }
